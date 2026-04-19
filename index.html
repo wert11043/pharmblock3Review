@@ -528,13 +528,19 @@ function updateProgress() {
 function revealAll() {
   if (!currentCategory) return;
   pairs.forEach(function(p) {
-    if (!matched.has(p.id)) {
-      const dEl = document.querySelector('.card[data-type=drug][data-id="'+p.id+'"]');
-      const mEl = document.querySelector('.card[data-type=mech][data-id="'+p.id+'"]');
-      if (dEl) { dEl.classList.add("correct","locked"); dEl.classList.remove("selected"); dEl.onclick=null; }
-      if (mEl) { mEl.classList.add("correct","locked"); mEl.classList.remove("selected"); mEl.onclick=null; }
-      matched.add(p.id);
-    }
+    matched.add(p.id);
+    const dEl = document.querySelector('.card[data-type=drug][data-id="'+p.id+'"]');
+    if (dEl) { dEl.classList.add("correct","locked"); dEl.classList.remove("selected"); dEl.onclick=null; }
+  });
+  // 重新依左欄順序渲染右欄，使答案對齊
+  const mc = document.getElementById("mech-cards");
+  mc.innerHTML = "";
+  drugOrder.forEach(function(id) {
+    const el = document.createElement("div");
+    el.className = "card correct locked";
+    el.dataset.id = id; el.dataset.type = "mech";
+    el.textContent = pairs[id].mech;
+    mc.appendChild(el);
   });
   updateProgress();
 }
