@@ -6,407 +6,411 @@
 <title>考試3 藥物配對題</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
-    min-height: 100vh;
-  }
-  header {
-    background: #1e293b;
-    padding: 14px 20px;
-    border-bottom: 1px solid #334155;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  header h1 { font-size: 1.1rem; color: #f1f5f9; flex: 1; }
-  #score-box {
-    background: #0f172a;
-    padding: 5px 14px;
-    border-radius: 999px;
-    font-size: 0.88rem;
-    color: #94a3b8;
-    white-space: nowrap;
-  }
-  #score-box span { color: #38bdf8; font-weight: 700; }
+  body { font-family: "Noto Sans TC","Microsoft JhengHei",sans-serif; background:#0f172a; color:#e2e8f0; min-height:100vh; }
+  header { background:#1e293b; padding:12px 16px; border-bottom:1px solid #334155; display:flex; align-items:center; gap:10px; }
+  header h1 { font-size:1rem; color:#f1f5f9; flex:1; }
+  #score-box { background:#0f172a; padding:4px 12px; border-radius:999px; font-size:0.85rem; color:#94a3b8; white-space:nowrap; }
+  #score-box span { color:#38bdf8; font-weight:700; }
 
-  /* Category tabs */
-  .tab-row {
-    display: flex;
-    gap: 6px;
-    padding: 10px 16px;
-    overflow-x: auto;
-    background: #1e293b;
-    border-bottom: 1px solid #334155;
-    scrollbar-width: thin;
-    -webkit-overflow-scrolling: touch;
-  }
-  .cat-btn {
-    background: #334155;
-    border: none;
-    color: #94a3b8;
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .cat-btn.active { background: #0284c7; color: #fff; }
+  .tab-row { display:flex; gap:6px; padding:8px 14px; overflow-x:auto; background:#1e293b; border-bottom:1px solid #334155; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
+  .cat-btn { background:#334155; border:none; color:#94a3b8; padding:5px 11px; border-radius:7px; cursor:pointer; font-size:0.78rem; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
+  .cat-btn.active { background:#0284c7; color:#fff; }
 
-  /* Mode tabs */
-  #modes {
-    display: none;
-    gap: 6px;
-    padding: 8px 16px;
-    background: #162032;
-    border-bottom: 1px solid #334155;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  #modes.visible { display: flex; }
-  .mode-btn {
-    background: #1e293b;
-    border: 1px solid #334155;
-    color: #94a3b8;
-    padding: 5px 14px;
-    border-radius: 999px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .mode-btn.active { background: #7c3aed; border-color: #7c3aed; color: #fff; }
-  .mode-btn[data-mode="副作用"].active { background: #b45309; border-color: #b45309; }
-  .mode-btn[data-mode="禁忌症"].active { background: #be123c; border-color: #be123c; }
+  #modes { display:none; gap:5px; padding:7px 14px; background:#162032; border-bottom:1px solid #334155; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  #modes.visible { display:flex; }
+  .mode-btn { background:#1e293b; border:1px solid #334155; color:#94a3b8; padding:4px 12px; border-radius:999px; cursor:pointer; font-size:0.78rem; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
+  .mode-btn.active[data-mode="機轉"]   { background:#0369a1; border-color:#0369a1; color:#fff; }
+  .mode-btn.active[data-mode="副作用"] { background:#b45309; border-color:#b45309; color:#fff; }
+  .mode-btn.active[data-mode="禁忌症"] { background:#be123c; border-color:#be123c; color:#fff; }
+  .mode-btn.active[data-mode="適應症"] { background:#166534; border-color:#166534; color:#fff; }
+  .mode-btn.active[data-mode="注意事項"]{ background:#6b21a8; border-color:#6b21a8; color:#fff; }
 
-  /* Controls */
-  #controls {
-    padding: 10px 16px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  #progress-txt { color: #64748b; font-size: 0.82rem; flex: 1; }
-  .btn {
-    background: #334155;
-    border: none;
-    color: #e2e8f0;
-    padding: 6px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn-primary { background: #0284c7; }
+  #controls { padding:8px 14px; display:flex; gap:7px; align-items:center; flex-wrap:wrap; }
+  #progress-txt { color:#64748b; font-size:0.8rem; flex:1; }
+  .btn { background:#334155; border:none; color:#e2e8f0; padding:5px 13px; border-radius:7px; cursor:pointer; font-size:0.78rem; -webkit-tap-highlight-color:transparent; }
+  .btn-primary { background:#0284c7; }
 
-  /* Game */
-  #game {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 12px 16px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-  .col-header {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    color: #64748b;
-    margin-bottom: 6px;
-  }
-  .card {
-    background: #1e293b;
-    border: 2px solid #334155;
-    border-radius: 10px;
-    padding: 11px 13px;
-    cursor: pointer;
-    font-size: 0.83rem;
-    line-height: 1.5;
-    transition: border-color .12s, background .12s;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 7px;
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .card:active:not(.matched-card):not(.locked) { background: #1a3554; }
-  .card.selected { border-color: #f59e0b; background: #1c1800; }
-  .card.correct  { border-color: #22c55e; background: #052e16; color: #86efac; cursor: default; }
-  .card.wrong    { border-color: #ef4444; background: #2d0000; animation: shake .35s; }
-  .card.locked   { cursor: default; opacity: .55; }
-  @keyframes shake {
-    0%,100%{ transform:translateX(0) }
-    25%{ transform:translateX(-5px) }
-    75%{ transform:translateX(5px) }
-  }
+  #game { display:grid; grid-template-columns:1fr 1fr; gap:9px; padding:10px 14px; max-width:1100px; margin:0 auto; }
+  .col-header { font-size:0.7rem; text-transform:uppercase; letter-spacing:.07em; color:#64748b; margin-bottom:5px; }
+  .card { background:#1e293b; border:2px solid #334155; border-radius:9px; padding:10px 12px; cursor:pointer; font-size:0.82rem; line-height:1.5; transition:border-color .12s,background .12s; min-height:50px; display:flex; align-items:center; margin-bottom:6px; user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
+  .card.selected { border-color:#f59e0b; background:#1c1800; }
+  .card.correct  { border-color:#22c55e; background:#052e16; color:#86efac; cursor:default; }
+  .card.wrong    { border-color:#ef4444; background:#2d0000; animation:shake .35s; }
+  .card.locked   { cursor:default; opacity:.5; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
-  #banner {
-    display: none;
-    text-align: center;
-    padding: 28px 20px;
-  }
-  #banner h2 { font-size: 1.8rem; color: #38bdf8; margin-bottom: 6px; }
-  #banner p  { color: #94a3b8; margin-bottom: 16px; }
+  #banner { display:none; text-align:center; padding:24px 16px; }
+  #banner h2 { font-size:1.6rem; color:#38bdf8; margin-bottom:6px; }
+  #banner p  { color:#94a3b8; margin-bottom:14px; }
 
-  @media (max-width: 580px) {
-    #game { grid-template-columns: 1fr; }
-  }
+  @media(max-width:560px){ #game{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
-
 <header>
   <h1>🧬 藥物配對題</h1>
   <div id="score-box">得分 <span id="score">0</span> / <span id="total">0</span></div>
 </header>
-
 <div class="tab-row" id="cats"></div>
-
 <div id="modes">
-  <button class="mode-btn active" data-mode="機轉" onclick="setMode('機轉',this)">⚙️ 機轉</button>
-  <button class="mode-btn" data-mode="副作用" onclick="setMode('副作用',this)">⚠️ 副作用</button>
-  <button class="mode-btn" data-mode="禁忌症" onclick="setMode('禁忌症',this)">🚫 禁忌症</button>
+  <button class="mode-btn active" data-mode="機轉"   onclick="setMode('機轉',this)">⚙️ 機轉</button>
+  <button class="mode-btn" data-mode="適應症"        onclick="setMode('適應症',this)">🎯 適應症</button>
+  <button class="mode-btn" data-mode="副作用"        onclick="setMode('副作用',this)">⚠️ 副作用</button>
+  <button class="mode-btn" data-mode="禁忌症"        onclick="setMode('禁忌症',this)">🚫 禁忌症</button>
+  <button class="mode-btn" data-mode="注意事項"      onclick="setMode('注意事項',this)">📌 注意事項</button>
 </div>
-
 <div id="controls">
   <span id="progress-txt">選擇上方類別開始</span>
   <button class="btn btn-primary" id="btn-shuffle" onclick="shuffle()" style="display:none">🔀 重洗</button>
   <button class="btn" id="btn-reveal" onclick="revealAll()" style="display:none">👁 揭曉</button>
 </div>
-
 <div id="banner">
   <h2>🎉 完成！</h2>
   <p id="banner-msg"></p>
   <button class="btn btn-primary" onclick="shuffle()">再練一次</button>
 </div>
-
 <div id="game">
-  <div>
-    <div class="col-header" id="left-header">藥物名稱</div>
-    <div id="drug-cards"></div>
-  </div>
-  <div>
-    <div class="col-header" id="right-header">作用機轉</div>
-    <div id="mech-cards"></div>
-  </div>
+  <div><div class="col-header">藥物名稱</div><div id="drug-cards"></div></div>
+  <div><div class="col-header" id="right-header">作用機轉</div><div id="mech-cards"></div></div>
 </div>
 
 <script>
 const DATA = {
   "糖尿病用藥": {
     機轉: [
-      { drug: "Regular insulin (RI)", mech: "外源性胰島素補充，提供餐時降糖" },
-      { drug: "NPH（中效胰島素）", mech: "加 Zn + protamine 延長 hexamer→monomer 轉換，延緩吸收" },
-      { drug: "Lispro / Aspart / Glulisine", mech: "維持 monomer 狀態，避免聚集，加速吸收" },
-      { drug: "Glargine / Detemir", mech: "皮下沈澱緩釋（Glargine）或與 albumin 結合延長作用（Detemir）" },
-      { drug: "Acarbose", mech: "抑制小腸 α-glucosidase，延緩雙醣→單醣吸收" },
-      { drug: "Sulfonylureas（Gliquidone）", mech: "抑制 β-cell ATP-sensitive K⁺ channel → depolarization → Ca²⁺ influx → insulin 分泌" },
-      { drug: "Repaglinide / Nateglinide（-glinide）", mech: "非 SU 型，作用於 SU receptor 但解離快，短效促泌" },
-      { drug: "Metformin", mech: "活化 AMPK，降低肝糖新生與 glycogenolysis，增加周邊 insulin sensitivity" },
-      { drug: "Pioglitazone / Rosiglitazone（-glitazone）", mech: "PPARγ agonist，增加 GLUT 表現，改善 insulin resistance" },
-      { drug: "GLP-1 agonists（Exenatide / Liraglutide / Semaglutide）", mech: "增加 glucose-dependent insulin secretion、抑制 glucagon、延遲胃排空、抑制食慾" },
-      { drug: "DPP4 inhibitors（-gliptin）", mech: "抑制 DPP4，延長內生 GLP-1 作用時間" },
-      { drug: "SGLT2 inhibitors（-gliflozin）", mech: "抑制近曲小管 SGLT2，降低葡萄糖再吸收，使尿糖上升" },
-      { drug: "Pramlintide", mech: "模仿 amylin，減少 glucagon、延遲胃排空、降低食慾" },
+      { drug:"Regular insulin (RI)", mech:"外源性胰島素補充，提供餐時降糖" },
+      { drug:"NPH（中效胰島素）", mech:"加 Zn + protamine 延長 hexamer→monomer 轉換，延緩吸收" },
+      { drug:"Lispro / Aspart / Glulisine", mech:"維持 monomer 狀態，避免聚集，加速吸收" },
+      { drug:"Glargine / Detemir", mech:"皮下沈澱緩釋（Glargine）；與 albumin 結合延長作用（Detemir）" },
+      { drug:"Acarbose", mech:"抑制小腸 α-glucosidase，延緩雙醣→單醣吸收" },
+      { drug:"Sulfonylureas（SU）", mech:"抑制 β-cell ATP-sensitive K⁺ channel → depolarization → Ca²⁺ influx → insulin 分泌" },
+      { drug:"Repaglinide / Nateglinide（-glinide）", mech:"非 SU 型，作用於 SU receptor 但解離快，短效促泌" },
+      { drug:"Metformin", mech:"活化 AMPK，降低肝糖新生與 glycogenolysis，增加周邊 insulin sensitivity" },
+      { drug:"Pioglitazone / Rosiglitazone（-glitazone）", mech:"PPARγ agonist，增加 GLUT 表現，改善 insulin resistance" },
+      { drug:"GLP-1 agonists（Exenatide / Liraglutide / Semaglutide）", mech:"增加 glucose-dependent insulin secretion、抑制 glucagon、延遲胃排空、抑制食慾" },
+      { drug:"DPP4 inhibitors（-gliptin）", mech:"抑制 DPP4，延長內生 GLP-1 作用時間" },
+      { drug:"SGLT2 inhibitors（-gliflozin）", mech:"抑制近曲小管 SGLT2，降低葡萄糖再吸收，使尿糖上升" },
+      { drug:"Pramlintide", mech:"模仿 amylin，減少 glucagon、延遲胃排空、降低食慾" },
+    ],
+    適應症: [
+      { drug:"Metformin", mech:"Type 2 DM 一線用藥" },
+      { drug:"Sulfonylureas（SU）", mech:"Type 2 DM 輔助降糖" },
+      { drug:"TZD（Pioglitazone / Rosiglitazone）", mech:"Type 2 DM，偏向 insulin sensitizer" },
+      { drug:"SGLT2 inhibitors（-gliflozin）", mech:"Type 2 DM 合併心衰或 CV risk 的病人" },
+      { drug:"GLP-1 agonists", mech:"Type 2 DM、肥胖合併代謝控制" },
+      { drug:"Acarbose", mech:"Type 2 DM 飯後高血糖；可與 insulin 或 SU 合併" },
+      { drug:"Regular insulin (RI)", mech:"Type 1 DM、需 insulin replacement、餐時血糖控制" },
+      { drug:"Glargine / Detemir", mech:"Basal insulin 維持（長效基礎胰島素）" },
+      { drug:"Pramlintide", mech:"Diabetes adjunct therapy（Type 1 & 2 DM 輔助）" },
+      { drug:"DPP4 inhibitors（-gliptin）", mech:"Type 2 DM（口服、病人接受度高、CV outcome neutral）" },
     ],
     副作用: [
-      { drug: "Metformin", mech: "Lactic acidosis（嚴重；肝腎功能差者風險高）" },
-      { drug: "Sulfonylureas（SU）", mech: "Hypoglycemia（必考，onset 快、half-life 長，吃藥後一定要進食）" },
-      { drug: "TZD（Pioglitazone / Rosiglitazone）", mech: "Fluid retention、體重增加、心衰惡化、肝毒性；Rosiglitazone 心血管風險高" },
-      { drug: "SGLT2 inhibitors（-gliflozin）", mech: "UTI / 泌尿生殖道感染（必考）" },
-      { drug: "Acarbose", mech: "腹脹、腹瀉（單用通常不會造成嚴重低血糖）" },
-      { drug: "GLP-1 agonists", mech: "Nausea / vomiting、胰臟炎風險" },
-      { drug: "NPH（中效胰島素）", mech: "仍有 peak，半夜或下一餐前易低血糖" },
-      { drug: "Lispro / Aspart / Glulisine（速效）", mech: "較不易造成下一餐低血糖（peak 較早且短）" },
+      { drug:"Metformin", mech:"Lactic acidosis（嚴重；肝腎功能差者風險高）" },
+      { drug:"Sulfonylureas（SU）", mech:"Hypoglycemia（必考，half-life 長，吃藥後一定要進食）" },
+      { drug:"TZD（Pioglitazone / Rosiglitazone）", mech:"Fluid retention、體重增加、心衰惡化、肝毒性；Rosiglitazone 心血管風險高" },
+      { drug:"SGLT2 inhibitors（-gliflozin）", mech:"UTI / 泌尿生殖道感染（必考）" },
+      { drug:"Acarbose", mech:"腹脹、腹瀉（單用通常不造成嚴重低血糖）" },
+      { drug:"GLP-1 agonists", mech:"Nausea / vomiting（常見）；胰臟炎（罕見）" },
+      { drug:"NPH", mech:"仍有 peak，半夜或下一餐前易低血糖" },
     ],
     禁忌症: [
-      { drug: "Metformin", mech: "eGFR < 30、hepatic / renal / cardiorespiratory insufficiency" },
-      { drug: "TZD（Pioglitazone / Rosiglitazone）", mech: "Congestive heart failure、AST/ALT > 2.5x ULN（肝病）" },
-      { drug: "SGLT2 inhibitors（-gliflozin）", mech: "不建議在 eGFR < 30 時起始" },
-      { drug: "Acarbose", mech: "肝硬化、malabsorption、severe renal impairment" },
-      { drug: "Exenatide（GLP-1 agonist）", mech: "eGFR < 30 禁用" },
-      { drug: "Sulfonylureas（SU）", mech: "腎功能不佳、肝硬化者慎用" },
-      { drug: "Desmopressin（DDAVP）", mech: "Nephrogenic DI（V2 receptor 本身缺陷，給藥無效）" },
+      { drug:"Metformin", mech:"eGFR < 30、hepatic / renal / cardiorespiratory insufficiency" },
+      { drug:"TZD（Pioglitazone / Rosiglitazone）", mech:"Congestive heart failure、AST/ALT > 2.5x ULN" },
+      { drug:"SGLT2 inhibitors（-gliflozin）", mech:"不建議在 eGFR < 30 時起始" },
+      { drug:"Acarbose", mech:"肝硬化、malabsorption、severe renal impairment" },
+      { drug:"Exenatide（GLP-1 agonist）", mech:"eGFR < 30 禁用" },
+      { drug:"Sulfonylureas（SU）", mech:"腎功能不佳、肝硬化者慎用" },
+    ],
+    注意事項: [
+      { drug:"Metformin", mech:"第一線首選；很少造成低血糖；可輕微減重" },
+      { drug:"TZD（必考）", mech:"PPARγ agonist；Rosiglitazone 心血管風險高；副作用：fluid retention" },
+      { drug:"SGLT2i（Empagliflozin）", mech:"有 CV benefit（EMPA-REG outcome）；可與 metformin、SU、TZD、insulin 合併" },
+      { drug:"GLP-1（Liraglutide / Semaglutide）", mech:"Liraglutide 降 CV mortality；Semaglutide 可減重、改善 CV outcome" },
+      { drug:"DPP4 inhibitors（-gliptin）", mech:"CV outcome 大致 neutral；口服，接受度高" },
+      { drug:"Regular insulin", mech:"Onset 30–60 min，peak 2–5 hr，duration 6–8 hr；須餐前 30–60 分鐘施打" },
+      { drug:"SU 腎功能差時", mech:"首選 Gliquidone（相對較安全）" },
+      { drug:"Acarbose 服法", mech:"隨餐服用；單用不造成嚴重低血糖" },
     ],
   },
 
   "降血脂藥物": {
     機轉: [
-      { drug: "β-Sitosterol（植物固醇）", mech: "與膽固醇競爭腸道吸收" },
-      { drug: "Ezetimibe", mech: "抑制腸上皮 NPC1L1，阻斷膽固醇吸收" },
-      { drug: "Cholestyramine / Colestipol（膽酸結合樹脂）", mech: "與膽酸結合，降低膽酸再吸收，間接減少膽固醇來源" },
-      { drug: "Niacin（Nicotinic acid）", mech: "抑制脂肪組織 FFA 釋放、肝臟 TG 合成；提升 LPL；增加 HDL" },
-      { drug: "Fibrate（Gemfibrozil / Fenofibrate）", mech: "PPARα agonist，提升 LPL，增加 β-oxidation，降低 VLDL/TG" },
-      { drug: "Statins（-statin）", mech: "抑制 HMG-CoA reductase，減少內生性膽固醇合成，增加肝細胞 LDLR" },
-      { drug: "Bempedoic acid", mech: "抑制 ATP-citrate lyase（ACL），位於 statin 更上游" },
-      { drug: "PCSK9 抗體（Alirocumab / Evolocumab）", mech: "中和 PCSK9，保留 LDLR，增加肝臟回收 LDL" },
-      { drug: "Inclisiran", mech: "雙股 siRNA 直接降解 PCSK9 mRNA，長效降 LDL" },
+      { drug:"β-Sitosterol（植物固醇）", mech:"與膽固醇競爭腸道吸收" },
+      { drug:"Ezetimibe", mech:"抑制腸上皮 NPC1L1，阻斷膽固醇吸收" },
+      { drug:"Cholestyramine / Colestipol（膽酸結合樹脂）", mech:"與膽酸結合，降低膽酸再吸收，間接減少膽固醇來源" },
+      { drug:"Niacin（Nicotinic acid）", mech:"抑制脂肪組織 FFA 釋放、肝臟 TG 合成；提升 LPL；增加 HDL" },
+      { drug:"Fibrate（Gemfibrozil / Fenofibrate）", mech:"PPARα agonist，提升 LPL，增加 β-oxidation，降低 VLDL/TG" },
+      { drug:"Statins（-statin）", mech:"抑制 HMG-CoA reductase，減少內生性膽固醇合成，增加肝細胞 LDLR" },
+      { drug:"Bempedoic acid", mech:"抑制 ATP-citrate lyase（ACL），位於 statin 更上游" },
+      { drug:"PCSK9 抗體（Alirocumab / Evolocumab）", mech:"中和 PCSK9，保留 LDLR，增加肝臟回收 LDL" },
+      { drug:"Inclisiran", mech:"雙股 siRNA 直接降解 PCSK9 mRNA，長效降 LDL" },
+    ],
+    適應症: [
+      { drug:"Statins（-statin）", mech:"高 LDL 第一線" },
+      { drug:"Fibrate（Gemfibrozil / Fenofibrate）", mech:"高 TG 為主，一線降 TG" },
+      { drug:"Niacin（Nicotinic acid）", mech:"高 TG、提高 HDL" },
+      { drug:"Ezetimibe", mech:"Statin 無法用時第二線，或與 statin 合併降 LDL" },
+      { drug:"PCSK9 抗體（Alirocumab / Evolocumab）", mech:"Familial hypercholesterolemia、極高 LDL、statin 無法控制" },
+      { drug:"Inclisiran", mech:"高 LDL、需長效降脂（每年約打兩次）" },
+      { drug:"Bempedoic acid", mech:"Statin intolerance 或需額外降 LDL" },
+      { drug:"Cholestyramine（膽酸結合樹脂）", mech:"Hypercholesterolemia" },
     ],
     副作用: [
-      { drug: "Statins（-statin）", mech: "Myopathy（亞洲人風險高於白人）；肝指數上升" },
-      { drug: "Fibrate（Gemfibrozil / Fenofibrate）", mech: "肌病變、膽結石、AST/ALT 上升；與 warfarin 合用增加出血風險" },
-      { drug: "Niacin（Nicotinic acid）", mech: "潮紅搔癢（可預防性給 aspirin）；雖升 HDL，臨床 outcome 未必更好" },
-      { drug: "Cholestyramine（膽酸結合樹脂）", mech: "便秘、胃灼熱；長期可因 Vit K 缺乏造成低凝血酶原症" },
-      { drug: "Statin + Warfarin（Simvastatin / Lovastatin / Atorvastatin / Fluvastatin）", mech: "競爭 CYP2C9 → warfarin 代謝下降 → 出血風險↑（改用 Pravastatin）" },
-      { drug: "PCSK9 抗體（長期）", mech: "可能產生對抗抗體（anti-drug antibodies）" },
-      { drug: "Bempedoic acid", mech: "可能升高肝指數（liver-specific activation）" },
+      { drug:"Statins（-statin）", mech:"Myopathy（亞洲人風險高於白人）；肝指數上升" },
+      { drug:"Fibrate", mech:"肌病變、膽結石、AST/ALT 上升；與 warfarin 合用增加出血風險" },
+      { drug:"Niacin（Nicotinic acid）", mech:"潮紅搔癢（可預防性給 aspirin）" },
+      { drug:"Cholestyramine（膽酸結合樹脂）", mech:"便秘、胃灼熱；長期 Vit K 缺乏 → 低凝血酶原症" },
+      { drug:"Statin + Warfarin（Simvastatin / Lovastatin / Atorvastatin / Fluvastatin）", mech:"競爭 CYP2C9 → warfarin 代謝↓ → 出血風險↑（改用 Pravastatin）" },
+      { drug:"PCSK9 抗體（長期）", mech:"可能產生對抗抗體（anti-drug antibodies）" },
     ],
     禁忌症: [
-      { drug: "Statins（-statin）", mech: "肝功能異常、肌病變高風險者慎用" },
-      { drug: "Fibrate", mech: "肝腎功能不佳、膽道疾病慎用" },
-      { drug: "Niacin（Nicotinic acid）", mech: "嚴重肝病、嚴重胃病" },
-      { drug: "Statin 懷孕禁用", mech: "懷孕（致畸性，X 級）" },
+      { drug:"Statins（-statin）", mech:"肝功能異常、肌病變高風險者慎用；懷孕禁用（致畸性）" },
+      { drug:"Fibrate", mech:"肝腎功能不佳、膽道疾病慎用" },
+      { drug:"Niacin（Nicotinic acid）", mech:"嚴重肝病、嚴重胃病" },
+    ],
+    注意事項: [
+      { drug:"Statin 服藥時間", mech:"Atorvastatin / Rosuvastatin（t½ 14 hr）任何時間服；其餘睡前服（夜間膽固醇合成旺）" },
+      { drug:"Statin prodrug vs active", mech:"Active form：Pravastatin、Fluvastatin；Prodrug：Lovastatin、Simvastatin、Mevastatin" },
+      { drug:"Fibrate（必考）", mech:"不會增加 LDL receptor 表現" },
+      { drug:"Ezetimibe（必考 target）", mech:"NPC1L1；單用效果有限，常與 statin 合併" },
+      { drug:"Niacin 潮紅預防", mech:"可預先給 aspirin 抑制前列腺素；雖升 HDL，臨床 outcome 未必改善" },
+      { drug:"Cholestyramine 服法", mech:"飯前與液體服用；不影響 TG；粉末劑型" },
+      { drug:"Statin + Warfarin 安全選項", mech:"改用 Pravastatin（不走 CYP2C9，不影響 warfarin）" },
     ],
   },
 
   "甲狀腺用藥": {
     機轉: [
-      { drug: "Levothyroxine（T4）/ Liothyronine（T3）", mech: "外源性補充甲狀腺素" },
-      { drug: "PTU / Methimazole / Carbimazole（Thioamides）", mech: "抑制 TPO，阻斷 iodide oxidation、organification 及 MIT/DIT coupling" },
-      { drug: "PTU（特有）", mech: "額外抑制周邊 T4→T3 轉換（Methimazole 無此作用）" },
-      { drug: "Thiocyanate / Perchlorate（Ionic inhibitors）", mech: "與 iodide 競爭 NIS，抑制 I⁻ 進入濾泡細胞" },
-      { drug: "Lugol's solution / SSKI", mech: "Wolff-Chaikoff effect：急性抑制 TH 合成與釋放（只能短期）" },
-      { drug: "¹³¹I（Radioiodine）", mech: "β 射線破壞甲狀腺細胞，治療 hyperthyroidism" },
-      { drug: "Propranolol（thyroid storm 輔助）", mech: "降交感症狀；同時抑制 peripheral T4→T3 轉換" },
-      { drug: "Amiodarone", mech: "含碘且抑制 T4→T3，可致甲狀腺功能低下或甲狀腺毒症" },
+      { drug:"Levothyroxine（T4）/ Liothyronine（T3）", mech:"外源性補充甲狀腺素" },
+      { drug:"PTU / Methimazole / Carbimazole（Thioamides）", mech:"抑制 TPO，阻斷 iodide oxidation、organification 及 MIT/DIT coupling" },
+      { drug:"PTU（特有）", mech:"額外抑制周邊 T4→T3 轉換（Methimazole 無此作用）" },
+      { drug:"Thiocyanate / Perchlorate（Ionic inhibitors）", mech:"與 iodide 競爭 NIS，抑制 I⁻ 進入濾泡細胞" },
+      { drug:"Lugol's solution / SSKI", mech:"Wolff-Chaikoff effect：急性抑制 TH 合成與釋放（只能短期）" },
+      { drug:"¹³¹I（Radioiodine）", mech:"β 射線破壞甲狀腺細胞，治療 hyperthyroidism" },
+      { drug:"Propranolol（thyroid storm 輔助）", mech:"降交感症狀；同時抑制 peripheral T4→T3 轉換" },
+      { drug:"Amiodarone", mech:"含碘且抑制 T4→T3，可致甲狀腺功能低下或甲狀腺毒症" },
+    ],
+    適應症: [
+      { drug:"Levothyroxine（T4）", mech:"Hypothyroidism 首選（t½ 7 天，穩定）" },
+      { drug:"Liothyronine（T3）", mech:"Myxedema coma 首選（onset 快，t½ 1 天）" },
+      { drug:"PTU", mech:"Hyperthyroidism、thyroid storm、懷孕第一期（MMI 致畸改用 PTU）" },
+      { drug:"Methimazole（MMI）", mech:"Hyperthyroidism 臨床第一線（PTU 肝毒性 black box 後改用）" },
+      { drug:"Lugol's solution / SSKI", mech:"Thyroid storm、pre-thyroidectomy 準備、核災防護" },
+      { drug:"¹³¹I", mech:"Hyperthyroidism、thyroid cancer 術後 ablation" },
+      { drug:"¹²³I", mech:"Thyroid scan（診斷用，不破壞甲狀腺）" },
+      { drug:"Propranolol", mech:"Thyroid storm 輔助（降交感 + 抑制 T4→T3）" },
     ],
     副作用: [
-      { drug: "PTU", mech: "肝毒性（FDA black box warning）；起效慢 1–4 週" },
-      { drug: "PTU + MMI（共同）", mech: "Agranulocytosis（兩者共同嚴重副作用）" },
-      { drug: "¹³¹I（長期）", mech: "可能永久 hypothyroidism，需終生補充 T4" },
-      { drug: "Iodide（長期）", mech: "Escape 機制（NIS 下調→碘攝取減少）使療效消失，故只能短期" },
-      { drug: "Amiodarone-induced hypothyroidism", mech: "可補充甲狀腺素處理；type 2 thyrotoxicosis 用 corticosteroids" },
-      { drug: "Lugol's solution（長期）", mech: "Iodism（碘中毒）、過敏；Hashimoto's 患者 escape 機制受損無法依賴" },
+      { drug:"PTU", mech:"肝毒性（FDA black box warning）" },
+      { drug:"PTU + MMI（共同）", mech:"Agranulocytosis（兩者共同嚴重副作用）" },
+      { drug:"¹³¹I（長期）", mech:"可能永久 hypothyroidism，需終生補充 T4" },
+      { drug:"Iodide 長期使用", mech:"Escape 機制（NIS 下調）使療效消失；iodism、過敏" },
+      { drug:"Amiodarone 甲狀腺毒症 type 2", mech:"用 corticosteroids 處理（type 1 用 thioamides）" },
     ],
     禁忌症: [
-      { drug: "Methimazole（MMI）懷孕第一期", mech: "致畸性（cleft palate 等）→ 改用 PTU" },
-      { drug: "¹³¹I（Radioiodine）", mech: "懷孕與哺乳禁用" },
-      { drug: "Ionic inhibitors（Perchlorate）", mech: "Aplastic anemia 風險" },
-      { drug: "Iodide（長期）在 Hashimoto's", mech: "tight junction 破壞 → escape 機制受損 → 不能長期依賴" },
+      { drug:"Methimazole（MMI）懷孕第一期", mech:"致畸性（cleft palate 等）→ 改用 PTU" },
+      { drug:"¹³¹I（Radioiodine）", mech:"懷孕與哺乳禁用" },
+      { drug:"Ionic inhibitors（Perchlorate）", mech:"Aplastic anemia 風險" },
+      { drug:"Iodide 長期在 Hashimoto's", mech:"tight junction 破壞 → escape 機制受損 → 不能長期依賴" },
+    ],
+    注意事項: [
+      { drug:"PTU vs MMI 差異（必考）", mech:"PTU TID（t½ 2 hr）；MMI QD（t½ 8–12 hr）；只有 PTU 抑制周邊 T4→T3；Carbimazole 為 MMI prodrug" },
+      { drug:"Thyroid storm 處理順序（必考）", mech:"① PTU 300 mg Q4H → ② 1 hr 後 iodide → ③ β-blocker / steroid 同步" },
+      { drug:"為何 storm 先給 PTU 再給 iodide", mech:"先阻斷合成路徑，防止 iodide 被用來再合成 TH（若先給 iodide 後給 PTU 則 TH 先大量合成）" },
+      { drug:"Levothyroxine vs Liothyronine（必考）", mech:"T4：t½ 7 天，pool 800 mcg，吸收 80%；T3：t½ 1 天，效力 4–5 倍，onset 快 → myxedema coma" },
+      { drug:"Wolff-Chaikoff escape 機制", mech:"NIS 表現下調 → 碘攝取減少 → TH 合成恢復（故 iodide 只能短期用）" },
     ],
   },
 
   "抗骨質疏鬆藥": {
     機轉: [
-      { drug: "Bisphosphonates 含氮（Alendronate / Zoledronate）", mech: "抑制 FPPS（mevalonate pathway），阻斷蛋白質 prenylation → osteoclast 失能" },
-      { drug: "Bisphosphonates 不含氮（Etidronate / Clodronate）", mech: "干擾 ATP 代謝 → osteoclast 凋亡" },
-      { drug: "Teriparatide / Abaloparatide（PTH 類似物）", mech: "間歇性活化 PTH1R，促進 osteoblast，增加 bone formation" },
-      { drug: "Calcitonin salmon", mech: "抑制 osteoclast，增加骨密度，並增加腎排鈣" },
-      { drug: "Cinacalcet", mech: "活化 CaSR（calcium-sensing receptor），抑制 PTH 分泌" },
-      { drug: "Denosumab", mech: "與 RANKL 結合，阻斷 RANKL-RANK interaction，抑制 osteoclast 成熟" },
-      { drug: "Romosozumab", mech: "中和 sclerostin，活化 Wnt/β-catenin，促進 bone formation" },
-      { drug: "Raloxifene / Bazedoxifene（SERMs）", mech: "骨頭表現 estrogen-like effect 抑制 bone resorption；乳房/子宮內膜偏 antagonist" },
-      { drug: "Burosumab（Anti-FGF23）", mech: "中和 FGF23，減少腎排磷，增加 1,25(OH)₂D 形成" },
+      { drug:"Bisphosphonates 含氮（Alendronate / Zoledronate）", mech:"抑制 FPPS（mevalonate pathway），阻斷蛋白質 prenylation → osteoclast 失能" },
+      { drug:"Bisphosphonates 不含氮（Etidronate / Clodronate）", mech:"干擾 ATP 代謝 → osteoclast 凋亡" },
+      { drug:"Teriparatide / Abaloparatide（PTH 類似物）", mech:"間歇性活化 PTH1R，促進 osteoblast，增加 bone formation" },
+      { drug:"Calcitonin salmon", mech:"抑制 osteoclast，增加骨密度，並增加腎排鈣" },
+      { drug:"Cinacalcet", mech:"活化 CaSR（calcium-sensing receptor），抑制 PTH 分泌" },
+      { drug:"Denosumab", mech:"與 RANKL 結合，阻斷 RANKL-RANK interaction，抑制 osteoclast 成熟" },
+      { drug:"Romosozumab", mech:"中和 sclerostin，活化 Wnt/β-catenin，促進 bone formation" },
+      { drug:"Raloxifene / Bazedoxifene（SERMs）", mech:"骨頭表現 estrogen-like effect 抑制 bone resorption；乳房/子宮內膜偏 antagonist" },
+      { drug:"Burosumab（Anti-FGF23）", mech:"中和 FGF23，減少腎排磷，增加 1,25(OH)₂D 形成" },
+    ],
+    適應症: [
+      { drug:"Bisphosphonates（-dronate）", mech:"Osteoporosis（臨床第一線）、hypercalcemia、bone metastasis、glucocorticoid-induced osteoporosis、Paget disease" },
+      { drug:"Teriparatide / Abaloparatide", mech:"Osteoporosis（非第一線）；Teriparatide 也可用於 hypoparathyroidism" },
+      { drug:"Calcitonin salmon", mech:"Osteoporosis、Paget disease（postmenopausal osteoporosis）" },
+      { drug:"Cinacalcet", mech:"Secondary hyperparathyroidism in CKD、parathyroid carcinoma" },
+      { drug:"Denosumab", mech:"Osteoporosis、giant cell tumor" },
+      { drug:"Romosozumab", mech:"Osteoporosis、postmenopausal osteoporosis（2019 FDA 核准）" },
+      { drug:"Raloxifene（SERM）", mech:"Postmenopausal osteoporosis" },
+      { drug:"Burosumab", mech:"X-linked hypophosphatemic rickets" },
     ],
     副作用: [
-      { drug: "Bisphosphonates IV 劑型（Zoledronate / Pamidronate）", mech: "ONJ（osteonecrosis of jaw）發生率 0.7–12%" },
-      { drug: "Alendronate（Bisphosphonate 口服）", mech: "服後不可立刻躺平（食道刺激、食道炎）" },
-      { drug: "Raloxifene（SERM）", mech: "Hot flash、VTE（靜脈栓塞）、muscle spasm" },
-      { drug: "Denosumab", mech: "感染風險上升（NF-κB 訊號受抑制）" },
-      { drug: "Calcitonin", mech: "Injection site reaction、噁心、頭痛（臨床較少用）" },
-      { drug: "Vitamin D 過量", mech: "Hypercalcemia、hypercalciuria、renal stone" },
+      { drug:"Bisphosphonates IV 劑型（Zoledronate）", mech:"ONJ（osteonecrosis of jaw）發生率 0.7–12%" },
+      { drug:"Alendronate（口服 bisphosphonate）", mech:"服後不可立刻躺平（食道刺激、食道炎）" },
+      { drug:"Raloxifene（SERM）", mech:"Hot flash、VTE（靜脈栓塞）、muscle spasm" },
+      { drug:"Denosumab", mech:"感染風險上升（NF-κB 訊號受抑制）" },
+      { drug:"Calcitonin", mech:"Injection site reaction、噁心、頭痛（臨床較少用）" },
+      { drug:"Vitamin D 過量", mech:"Hypercalcemia、hypercalciuria、renal stone" },
     ],
     禁忌症: [
-      { drug: "Bisphosphonates", mech: "腎功能差（CrCl < 30–35）、食道嚴重疾病者慎用" },
-      { drug: "Calcitonin", mech: "懷孕、哺乳、小孩不建議使用" },
-      { drug: "Raloxifene（SERM）", mech: "VTE 風險高者慎用（如長期臥床、血栓病史）" },
-      { drug: "Vitamin D", mech: "Hypercalcemia、hypercalciuria、腎結石病史慎用" },
+      { drug:"Bisphosphonates", mech:"腎功能差（CrCl < 30–35）、食道嚴重疾病者慎用" },
+      { drug:"Calcitonin", mech:"懷孕、哺乳、小孩不建議使用" },
+      { drug:"Raloxifene（SERM）", mech:"VTE 風險高者慎用（血栓病史、長期臥床）" },
+      { drug:"Vitamin D", mech:"Hypercalcemia、hypercalciuria、腎結石病史慎用" },
+    ],
+    注意事項: [
+      { drug:"Denosumab target（必考）", mech:"Target 是 RANKL 不是 RANK；OPG 為體內天然 RANKL 誘餌受體，親和力比 RANK 高 500 倍" },
+      { drug:"Bisphosphonate 第一線", mech:"臨床第一線；T-score ≤ −2.5 = 骨鬆；−2.5 ~ −1 = 骨量低下；≥ −1 = 正常" },
+      { drug:"含氮 vs 不含氮 bisphosphonate", mech:"含氮（Alendronate / Zoledronate）抑制 FPPS；不含氮（Etidronate / Clodronate）干擾 ATP" },
+      { drug:"Romosozumab 特色", mech:"2019 FDA；比 PTH analog 更偏向強力 anabolic；同時些微減少 bone resorption" },
+      { drug:"Cinacalcet 臨床定位", mech:"多用於 CKD 繼發性副甲狀腺亢進或腫瘤，不是骨鬆第一線" },
     ],
   },
 
   "腦下垂體與產科": {
     機轉: [
-      { drug: "Leuprolide / Goserelin（GnRH agonists）", mech: "連續給藥造成 pituitary desensitization，功能上呈 antagonist" },
-      { drug: "Ganirelix / Degarelix（-relix）", mech: "直接阻斷 GnRH receptor，快速抑制 FSH/LH" },
-      { drug: "hCG / Gonadotropins", mech: "直接提供 FSH/LH/hCG 活性，促進濾泡成熟與排卵" },
-      { drug: "Pegvisomant", mech: "GH receptor competitive antagonist，阻斷 JAK2-STAT5 訊號" },
-      { drug: "Octreotide / Lanreotide（-reotide）", mech: "somatostatin 類似物，抑制 GH、TSH、glucagon、insulin 等分泌" },
-      { drug: "Bromocriptine / Cabergoline", mech: "D2 receptor agonist，抑制 prolactin 分泌" },
-      { drug: "Oxytocin", mech: "促進子宮收縮與射乳" },
-      { drug: "Atosiban", mech: "阻斷 oxytocin receptor，tocolytic（安胎）" },
-      { drug: "Ritodrine / Terbutaline（β2 tocolytics）", mech: "β2 agonist → cAMP ↑ → MLCK 抑制 → 子宮平滑肌鬆弛" },
-      { drug: "Desmopressin（DDAVP）", mech: "偏向 V2 receptor，增加 AQP2 與水再吸收；促 factor VIII/vWF 釋放" },
-      { drug: "Tolvaptan / Conivaptan（-vaptan）", mech: "阻斷 vasopressin receptor，減少腎臟水再吸收（aquaretic）" },
+      { drug:"Leuprolide / Goserelin（GnRH agonists）", mech:"連續給藥造成 pituitary desensitization，功能上呈 antagonist" },
+      { drug:"Ganirelix / Degarelix（-relix）", mech:"直接阻斷 GnRH receptor，快速抑制 FSH/LH" },
+      { drug:"hCG / Gonadotropins", mech:"直接提供 FSH/LH/hCG 活性，促進濾泡成熟與排卵" },
+      { drug:"Pegvisomant", mech:"GH receptor competitive antagonist，阻斷 JAK2-STAT5 訊號" },
+      { drug:"Octreotide / Lanreotide（-reotide）", mech:"somatostatin 類似物，抑制 GH、TSH、glucagon、insulin 等分泌" },
+      { drug:"Bromocriptine / Cabergoline", mech:"D2 receptor agonist，抑制 prolactin 分泌" },
+      { drug:"Oxytocin", mech:"促進子宮收縮與射乳" },
+      { drug:"Atosiban", mech:"阻斷 oxytocin receptor，tocolytic（安胎）" },
+      { drug:"Ritodrine / Terbutaline（β2 tocolytics）", mech:"β2 agonist → cAMP ↑ → MLCK 抑制 → 子宮平滑肌鬆弛" },
+      { drug:"Desmopressin（DDAVP）", mech:"偏向 V2 receptor，增加 AQP2 與水再吸收；促 factor VIII/vWF 釋放" },
+      { drug:"Tolvaptan / Conivaptan（-vaptan）", mech:"阻斷 vasopressin receptor，減少腎臟水再吸收（aquaretic）" },
+    ],
+    適應症: [
+      { drug:"GnRH agonists（Leuprolide / Goserelin）", mech:"Androgen-dependent prostate cancer、uterine fibroids、endometriosis、PCOS、性早熟" },
+      { drug:"GnRH antagonists（-relix，Degarelix）", mech:"IVF 排卵控制、advanced prostate cancer" },
+      { drug:"Gonadotropins（hCG）", mech:"不孕症、hypogonadotropic hypogonadism；IVF 觸發排卵" },
+      { drug:"Pegvisomant", mech:"Acromegaly" },
+      { drug:"Octreotide / Lanreotide（-reotide）", mech:"Acromegaly、VIPoma、carcinoid tumor、glucagonoma" },
+      { drug:"Bromocriptine / Cabergoline", mech:"Hyperprolactinemia、泌乳素瘤（第一線）" },
+      { drug:"Oxytocin", mech:"引產、uterine inertia（子宮收縮無力）、breast engorgement" },
+      { drug:"Atosiban", mech:"Uncomplicated preterm labor（安胎 tocolytic）" },
+      { drug:"Desmopressin（DDAVP）", mech:"Neurogenic DI、輕微 hemophilia A（促 vWF/factor VIII 釋放）" },
+      { drug:"Tolvaptan（-vaptan）", mech:"低血鈉（SIADH）；ADPKD" },
     ],
     副作用: [
-      { drug: "GnRH agonists 長期（女性）", mech: "骨質疏鬆（持續抑制 FSH/LH → 低雌激素狀態，類似停經）" },
-      { drug: "Oxytocin", mech: "子宮過強收縮（fetal distress）、水中毒（ADH-like 作用）" },
-      { drug: "Ritodrine / Terbutaline", mech: "心搏過速、肺水腫、緊張感（β1 side effect）" },
-      { drug: "Bromocriptine（D2 agonist）", mech: "心血管問題、肺纖維化（較 Cabergoline 副作用多）" },
-      { drug: "Tolvaptan（-vaptan）", mech: "肝毒性（療程不宜超過 30 天；需住院起始）" },
-      { drug: "MgSO4（tocolytic）", mech: "呼吸抑制、低鈣血症；與 CCB 或 β-mimetic 合用風險更高" },
+      { drug:"GnRH agonists 長期（女性）", mech:"骨質疏鬆（持續低雌激素，類似停經）" },
+      { drug:"Oxytocin", mech:"子宮過強收縮（fetal distress）、水中毒（ADH-like 作用）" },
+      { drug:"Ritodrine / Terbutaline", mech:"心搏過速、肺水腫（β1 side effect）" },
+      { drug:"Bromocriptine", mech:"心血管問題、肺纖維化（較 Cabergoline 副作用多）" },
+      { drug:"Tolvaptan（-vaptan）", mech:"肝毒性（療程不宜超過 30 天）" },
+      { drug:"MgSO4", mech:"呼吸抑制、低鈣血症；與 CCB 或 β-mimetic 合用風險更高" },
     ],
     禁忌症: [
-      { drug: "MgSO4", mech: "重症肌無力、腎功能差禁用；不可作早產安胎常規" },
-      { drug: "CCB tocolytics（Nifedipine）", mech: "不可與 β-mimetic 或 MgSO4 合用" },
-      { drug: "Desmopressin（DDAVP）", mech: "Nephrogenic DI 無效（V2 receptor 本身缺陷）" },
-      { drug: "Tolvaptan", mech: "肝毒性高風險者；療程不宜超過 30 天" },
+      { drug:"MgSO4（tocolytic）", mech:"重症肌無力、腎功能差禁用；不可作早產安胎常規" },
+      { drug:"CCB tocolytics（Nifedipine）", mech:"不可與 β-mimetic 或 MgSO4 合用" },
+      { drug:"Desmopressin（DDAVP）", mech:"Nephrogenic DI 無效（V2 receptor 本身缺陷）" },
+      { drug:"Tolvaptan（-vaptan）", mech:"肝功能不佳者；療程不宜超過 30 天" },
+    ],
+    注意事項: [
+      { drug:"GnRH agonists 連續給藥（必考）", mech:"連續給藥 = 功能上 antagonist（pituitary desensitization）；Goserelin 有 depot 劑型" },
+      { drug:"Degarelix（必考）", mech:"GnRH antagonist，可直接抑制 LH/FSH 治療 advanced prostate cancer" },
+      { drug:"Desmopressin 選用理由（必考）", mech:"較 arginine vasopressin 更偏 V2（少血管收縮），更安全" },
+      { drug:"Tolvaptan 起始注意", mech:"需住院起始（快速升鈉有 osmotic demyelination 風險）；ADPKD 療程可較長" },
+      { drug:"IVF 排卵控制流程", mech:"GnRH agonist/antagonist 控制排卵 → hCG 模擬 LH 觸發排卵" },
+      { drug:"Cabergoline vs Bromocriptine", mech:"Cabergoline 較安全、較少噁心；Bromocriptine 有心血管與肺纖維化問題" },
     ],
   },
 
   "減肥藥": {
     機轉: [
-      { drug: "Orlistat", mech: "共價結合腸脂肪酶 serine residue（不可逆），減少脂肪吸收約 30%" },
-      { drug: "Semaglutide（Wegovy）/ Liraglutide（Saxenda）", mech: "激活 GLP-1R → ↑insulin、↓glucagon、↓食慾、延遲胃排空" },
-      { drug: "Tirzepatide（Zepbound）", mech: "同時激活 GLP-1R + GIPR（dual incretin），減重效果優於單純 GLP-1 agonist" },
-      { drug: "Setmelanotide（Imcivree）", mech: "選擇性激活 MC4R（親和力為 MC1/3R 的 20 倍），下視丘抑制食慾" },
-      { drug: "Phentermine + Topiramate（Qsymia）", mech: "Phentermine = sympathomimetic amine（↑NE）；Topiramate = anticonvulsant（GABA↑、Na⁺↓）" },
-      { drug: "Bupropion + Naltrexone（Contrave）", mech: "DA/NE reuptake inhibitor + μ-opioid antagonist → 持續活化 POMC，抑制 mesolimbic reward" },
-      { drug: "Fenfluramine / Dexfenfluramine（已下架）", mech: "促進 5-HT 大量釋放並抑制再吸收 → 5-HT2c → ↓食慾" },
-      { drug: "Rimonabant（已下架）", mech: "CB1 inverse agonist，↓mesolimbic reward（↓進食愉悅感）" },
+      { drug:"Orlistat", mech:"共價結合腸脂肪酶 serine residue（不可逆），減少脂肪吸收約 30%" },
+      { drug:"Semaglutide（Wegovy）/ Liraglutide（Saxenda）", mech:"激活 GLP-1R → ↑insulin、↓glucagon、↓食慾、延遲胃排空" },
+      { drug:"Tirzepatide（Zepbound）", mech:"同時激活 GLP-1R + GIPR（dual incretin），減重效果優於單純 GLP-1 agonist" },
+      { drug:"Setmelanotide（Imcivree）", mech:"選擇性激活 MC4R（親和力為 MC1/3R 的 20 倍），下視丘抑制食慾" },
+      { drug:"Phentermine + Topiramate（Qsymia）", mech:"Phentermine = sympathomimetic amine（↑NE）；Topiramate = anticonvulsant（GABA↑、Na⁺↓）" },
+      { drug:"Bupropion + Naltrexone（Contrave）", mech:"DA/NE reuptake inhibitor + μ-opioid antagonist → 持續活化 POMC，抑制 mesolimbic reward" },
+      { drug:"Fenfluramine / Dexfenfluramine（已下架）", mech:"促進 5-HT 大量釋放並抑制再吸收 → 5-HT2c → ↓食慾" },
+      { drug:"Rimonabant（已下架）", mech:"CB1 inverse agonist，↓mesolimbic reward（↓進食愉悅感）" },
+    ],
+    適應症: [
+      { drug:"Orlistat", mech:"BMI ≥ 27（健保給付）或 ≥ 30（一般建議）" },
+      { drug:"Semaglutide（Wegovy）/ Liraglutide（Saxenda）", mech:"BMI ≥ 30，或 ≥ 27 有合併症的肥胖" },
+      { drug:"Tirzepatide（Zepbound）", mech:"肥胖；T2DM（Mounjaro 商品名，2023 FDA）" },
+      { drug:"Setmelanotide（Imcivree）", mech:"POMC / PCSK1 / LEPR gene deficiency 所致 hyperphagia（特定基因缺陷）" },
+      { drug:"Phentermine + Topiramate（Qsymia）", mech:"肥胖（BMI ≥ 30）" },
+      { drug:"Bupropion + Naltrexone（Contrave）", mech:"肥胖（BMI ≥ 30）" },
     ],
     副作用: [
-      { drug: "Orlistat", mech: "Steatorrhea（排油便）、↓脂溶性維生素（A/D/E/K）、脹氣、糞便失禁" },
-      { drug: "Setmelanotide（Imcivree）", mech: "憂鬱、自殺念頭（穿過 BBB 作用於中樞）" },
-      { drug: "Phentermine + Topiramate（Qsymia）", mech: "口乾、paresthesia、便秘、dysgeusia" },
-      { drug: "GLP-1 agonists（obesity）", mech: "Nausea / vomiting（常見）；胰臟炎（罕見）" },
-      { drug: "Fenfluramine / Dexfenfluramine（下架原因）", mech: "Cardiac valvulopathy（二尖瓣/主動脈瓣增厚）＋ pulmonary hypertension" },
-      { drug: "Rimonabant（下架原因）", mech: "憂鬱、焦慮、自殺傾向、癲癇" },
-      { drug: "Sibutramine（下架原因）", mech: "Tachycardia / hypertension → 心肌梗塞/中風風險（2010 下架）" },
+      { drug:"Orlistat", mech:"Steatorrhea（排油便）、↓脂溶性維生素（A/D/E/K）、脹氣、糞便失禁" },
+      { drug:"Setmelanotide（Imcivree）", mech:"憂鬱、自殺念頭（穿過 BBB）" },
+      { drug:"Phentermine + Topiramate（Qsymia）", mech:"口乾、paresthesia、便秘、dysgeusia" },
+      { drug:"GLP-1 agonists（obesity）", mech:"Nausea / vomiting（常見）；胰臟炎（罕見）" },
+      { drug:"Fenfluramine / Dexfenfluramine（下架原因）", mech:"Cardiac valvulopathy（二尖瓣/主動脈瓣增厚）＋ pulmonary hypertension" },
+      { drug:"Rimonabant（下架原因）", mech:"憂鬱、焦慮、自殺傾向、癲癇" },
+      { drug:"Sibutramine（下架原因）", mech:"Tachycardia / hypertension → 心肌梗塞 / 中風（2010 下架）" },
     ],
     禁忌症: [
-      { drug: "Setmelanotide（Imcivree）", mech: "一般肥胖無效，僅限 POMC / PCSK1 / LEPR gene deficiency 所致 hyperphagia" },
-      { drug: "GLP-1 agonists（obesity）", mech: "胰臟炎病史慎用；Exenatide 在 eGFR < 30 禁用" },
-      { drug: "Fenfluramine / Rimonabant / Sibutramine", mech: "已撤市，禁止使用" },
+      { drug:"Setmelanotide（Imcivree）", mech:"一般肥胖無效，僅限 POMC / PCSK1 / LEPR gene deficiency" },
+      { drug:"GLP-1 agonists（obesity）", mech:"胰臟炎病史慎用；Exenatide 在 eGFR < 30 禁用" },
+      { drug:"Fenfluramine / Rimonabant / Sibutramine", mech:"已撤市，禁止使用" },
+    ],
+    注意事項: [
+      { drug:"Orlistat（必考）", mech:"只作用 GI tract，不進 systemic circulation；限低脂飲食效果最佳" },
+      { drug:"Semaglutide（Wegovy）劑量", mech:"2.4 mg / 週，減重約 15%；Liraglutide（Saxenda）3.0 mg / 天" },
+      { drug:"Exenatide 來源", mech:"從 Gila monster exendin-4 衍生，與 GLP-1 有 53% homology；有 ER 劑型 2 mg / 週" },
+      { drug:"Phentermine + Topiramate（必考 B09/B10）", mech:"商品名 Qsymia；sympathomimetic amine + anticonvulsant；最大劑量可減 10–11% 體重" },
+      { drug:"Bupropion + Naltrexone（必考 B10）", mech:"作用 hypothalamus（POMC）+ mesolimbic reward system；商品名 Contrave" },
+      { drug:"Setmelanotide（必考 B10）", mech:"MC4R agonist，只用於特定基因缺陷性 hyperphagia；注意自殺傾向副作用" },
     ],
   },
 
   "PGx 與標靶藥": {
     機轉: [
-      { drug: "Warfarin", mech: "抑制 VKORC1，降低凝血因子活化（PK→CYP2C9，PD→VKORC1）" },
-      { drug: "Thiopurines（Azathioprine / 6-MP）", mech: "需 TPMT 代謝失活；TPMT PM 易蓄積造成毒性" },
-      { drug: "Gefitinib / Erlotinib（EGFR-TKIs）", mech: "抑制 EGFR tyrosine kinase signaling（需先驗 EGFR mutation）" },
-      { drug: "Cetuximab / Panitumumab（Anti-EGFR mAb）", mech: "中和 EGFR，阻斷 MAPK/PI3K 訊號（僅適用 wild-type KRAS）" },
-      { drug: "Trastuzumab（Herceptin）", mech: "中和 HER2（需 HER2 過度表現）" },
-      { drug: "Abacavir（NRTI）", mech: "HLA-B*5701 陽性者有致死性過敏反應風險" },
-      { drug: "Carbamazepine", mech: "Na⁺ channel blocker；亞洲人須先驗 HLA-B*1502（避免 SJS/TEN）" },
-      { drug: "Digoxin", mech: "抑制 Na⁺/K⁺-ATPase；受 MDR1/P-gp 影響；老人 Vd 縮小易中毒" },
-      { drug: "Acetaminophen", mech: "過量時 CYP2E1/CYP3A4 產生 NAPQI → 肝毒性（解毒劑：N-Acetylcysteine）" },
-      { drug: "Botulinum toxin", mech: "切割 SNARE 蛋白，抑制 ACh vesicle docking/release → flaccid paralysis" },
-      { drug: "Thalidomide", mech: "免疫調節與抗血管新生（抑制 VEGF/bFGF）；有致畸性" },
+      { drug:"Warfarin", mech:"抑制 VKORC1，降低凝血因子活化（PK→CYP2C9，PD→VKORC1）" },
+      { drug:"Thiopurines（Azathioprine / 6-MP）", mech:"需 TPMT 代謝失活；TPMT PM 易蓄積造成毒性" },
+      { drug:"Gefitinib / Erlotinib（EGFR-TKIs）", mech:"抑制 EGFR tyrosine kinase signaling（需先驗 EGFR mutation）" },
+      { drug:"Cetuximab / Panitumumab（Anti-EGFR mAb）", mech:"中和 EGFR，阻斷 MAPK/PI3K 訊號（僅適用 wild-type KRAS）" },
+      { drug:"Trastuzumab（Herceptin）", mech:"中和 HER2（需 HER2 過度表現）" },
+      { drug:"Abacavir（NRTI）", mech:"HLA-B*5701 陽性者有致死性過敏反應風險" },
+      { drug:"Carbamazepine", mech:"Na⁺ channel blocker；亞洲人須先驗 HLA-B*1502（避免 SJS/TEN）" },
+      { drug:"Digoxin", mech:"抑制 Na⁺/K⁺-ATPase；受 MDR1/P-gp 影響；老人 Vd 縮小易中毒" },
+      { drug:"Acetaminophen", mech:"過量時 CYP2E1/CYP3A4 產生 NAPQI → 肝毒性（解毒劑：N-Acetylcysteine）" },
+      { drug:"Botulinum toxin", mech:"切割 SNARE 蛋白，抑制 ACh vesicle docking/release → flaccid paralysis" },
+      { drug:"Thalidomide", mech:"免疫調節與抗血管新生（抑制 VEGF/bFGF）；有致畸性" },
+    ],
+    適應症: [
+      { drug:"Warfarin", mech:"抗凝血（AF、DVT、PE、人工瓣膜）" },
+      { drug:"Gefitinib / Erlotinib（EGFR-TKIs）", mech:"EGFR-mutant NSCLC（需先驗 EGFR mutation）" },
+      { drug:"Cetuximab / Panitumumab", mech:"mCRC（metastatic colorectal cancer，需 wild-type KRAS）" },
+      { drug:"Trastuzumab（Herceptin）", mech:"HER2-positive breast cancer（包含 metastatic）" },
+      { drug:"Abacavir（NRTI）", mech:"HIV 治療（HAART 組合之一）" },
+      { drug:"Carbamazepine", mech:"癲癇、三叉神經痛、神經痛" },
+      { drug:"Digoxin", mech:"心衰（心收縮力↑）、心房顫動（減慢心室率）" },
+      { drug:"Thiopurines（Azathioprine / 6-MP）", mech:"免疫抑制（器官移植、IBD）、血液腫瘤" },
+      { drug:"Thalidomide", mech:"多發性骨髓瘤、ENL（erythema nodosum leprosum）" },
+      { drug:"Botulinum toxin", mech:"醫美除皺、局部肌肉過強（如眼瞼痙攣、斜頸）" },
     ],
     副作用: [
-      { drug: "Warfarin + Simvastatin / Lovastatin / Atorvastatin / Fluvastatin", mech: "競爭 CYP2C9 → warfarin ↑ → 出血（改用 Pravastatin）" },
-      { drug: "Digoxin 中毒（老人 / 低血鉀）", mech: "黃視（xanthopsia）、心搏徐緩、心律不整" },
-      { drug: "Acetaminophen 過量", mech: "glucuronidation / sulfation 耗盡 → NAPQI 累積 → 肝細胞壞死" },
-      { drug: "Thiopurines（TPMT PM）", mech: "骨髓抑制、嚴重白血球低下" },
-      { drug: "Carbamazepine（HLA-B*1502 亞洲人）", mech: "SJS / TEN（嚴重皮膚黏膜反應）" },
-      { drug: "Abacavir（HLA-B*5701）", mech: "致死性過敏反應（fever、rash、GI 症狀、呼吸困難）" },
-      { drug: "Thalidomide", mech: "致畸性（海豹肢）、周邊神經病變、VTE" },
+      { drug:"Warfarin + Simvastatin / Atorvastatin / Fluvastatin", mech:"競爭 CYP2C9 → warfarin ↑ → 出血（改用 Pravastatin）" },
+      { drug:"Digoxin 中毒（老人 / 低血鉀）", mech:"黃視（xanthopsia）、心搏徐緩、心律不整" },
+      { drug:"Acetaminophen 過量", mech:"glucuronidation / sulfation 耗盡 → NAPQI 累積 → 肝細胞壞死" },
+      { drug:"Thiopurines（TPMT PM）", mech:"骨髓抑制、嚴重白血球低下" },
+      { drug:"Carbamazepine（HLA-B*1502 亞洲人）", mech:"SJS / TEN（嚴重皮膚黏膜反應）" },
+      { drug:"Abacavir（HLA-B*5701）", mech:"致死性過敏反應（fever、rash、GI 症狀、呼吸困難）" },
+      { drug:"Thalidomide", mech:"致畸性（海豹肢）、周邊神經病變、VTE" },
     ],
     禁忌症: [
-      { drug: "Abacavir", mech: "HLA-B*5701 陽性者絕對避免" },
-      { drug: "Carbamazepine（亞洲人）", mech: "HLA-B*1502 陽性者避免（SJS/TEN 風險）" },
-      { drug: "Thalidomide", mech: "懷孕、哺乳、可能懷孕者絕對禁用" },
-      { drug: "Cetuximab / Panitumumab", mech: "KRAS mutation 陽性者不宜用（療效差）" },
-      { drug: "Digoxin（腎功能差 / 低電解質）", mech: "腎功能差（親水性藥物易蓄積）；低血鉀/低血鎂時毒性增加" },
-      { drug: "Nitrofurantoin", mech: "腎功能不全、懷孕 38–42 週、一個月以下嬰兒、G6PD deficiency" },
+      { drug:"Abacavir", mech:"HLA-B*5701 陽性者絕對避免" },
+      { drug:"Carbamazepine（亞洲人）", mech:"HLA-B*1502 陽性者避免（SJS/TEN 風險）" },
+      { drug:"Thalidomide", mech:"懷孕、哺乳、可能懷孕者絕對禁用" },
+      { drug:"Cetuximab / Panitumumab", mech:"KRAS mutation 陽性者不宜（療效差）" },
+      { drug:"Digoxin（腎功能差 / 低電解質）", mech:"腎功能差（親水性易蓄積）；低血鉀 / 低血鎂時毒性增加" },
+      { drug:"Nitrofurantoin", mech:"腎功能不全、懷孕 38–42 週、一個月以下嬰兒、G6PD deficiency" },
+    ],
+    注意事項: [
+      { drug:"Warfarin PK / PD（必考）", mech:"PK 看 CYP2C9（代謝速率）；PD 看 VKORC1（藥效敏感性）；INR 維持 2.0–3.0" },
+      { drug:"EGFR-TKI 突變敏感性（必考）", mech:"Exon 19 deletion、L858R 較敏感；T790M 與抗藥性相關" },
+      { drug:"Trastuzumab target（必考）", mech:"Target 是 HER2 不是 HER1" },
+      { drug:"Cetuximab KRAS 篩選（必考）", mech:"僅適用 wild-type KRAS；使用前需做 KRAS 基因檢測" },
+      { drug:"Digoxin 老人用藥", mech:"親水性 → 老人 Vd 縮小 → 血中濃度升高；與利尿劑合用 → 低血鉀 → 毒性（黃視、心搏徐緩）" },
+      { drug:"Acetaminophen 解毒（必考）", mech:"解毒劑 N-Acetylcysteine（NAC）補充 glutathione，阻止 NAPQI 累積" },
+      { drug:"Thiopurines TPMT（必考）", mech:"TPMT PM 易蓄積 → 毒性；TPMT UM 可能療效不足" },
     ],
   },
 };
@@ -414,12 +418,9 @@ const DATA = {
 // ---- State ----
 let currentCategory = null;
 let currentMode = "機轉";
-let pairs = [];
-let drugOrder = [];
-let mechOrder = [];
+let pairs = [], drugOrder = [], mechOrder = [];
 let matched = new Set();
-let selectedDrug = null;
-let selectedMech = null;
+let selectedDrug = null, selectedMech = null;
 let score = 0;
 
 // ---- Build category tabs ----
@@ -428,7 +429,7 @@ Object.keys(DATA).forEach(cat => {
   const btn = document.createElement("button");
   btn.className = "cat-btn";
   btn.textContent = cat;
-  btn.onclick = function() { loadCategory(cat, btn); };
+  btn.onclick = function(){ loadCategory(cat, btn); };
   catsDiv.appendChild(btn);
 });
 
@@ -451,48 +452,36 @@ function startGame() {
   const raw = DATA[currentCategory][currentMode];
   if (!raw || raw.length === 0) return;
   pairs = raw.map((p, i) => ({...p, id: i}));
-  matched.clear();
-  selectedDrug = null;
-  selectedMech = null;
-  score = 0;
-  document.getElementById("score").textContent = score;
+  matched.clear(); selectedDrug = null; selectedMech = null; score = 0;
+  document.getElementById("score").textContent = 0;
   document.getElementById("total").textContent = pairs.length;
   document.getElementById("banner").style.display = "none";
   document.getElementById("btn-shuffle").style.display = "";
   document.getElementById("btn-reveal").style.display = "";
-
-  const modeLabel = { 機轉: "作用機轉", 副作用: "副作用 / 毒性", 禁忌症: "Contraindication" };
-  document.getElementById("right-header").textContent = modeLabel[currentMode] || currentMode;
+  const labels = { 機轉:"作用機轉", 適應症:"適應症", 副作用:"副作用 / 毒性", 禁忌症:"Contraindication", 注意事項:"注意事項 / 考點" };
+  document.getElementById("right-header").textContent = labels[currentMode] || currentMode;
   renderGame();
 }
 
-function shuffle() {
-  if (!currentCategory) return;
-  startGame();
-}
+function shuffle() { if (currentCategory) startGame(); }
 
 function renderGame() {
   drugOrder = pairs.map(p => p.id);
   mechOrder = shuffleArr(pairs.map(p => p.id));
-
   const dc = document.getElementById("drug-cards");
   const mc = document.getElementById("mech-cards");
-  dc.innerHTML = "";
-  mc.innerHTML = "";
-
+  dc.innerHTML = ""; mc.innerHTML = "";
   drugOrder.forEach(id => dc.appendChild(makeCard(pairs[id].drug, "drug", id)));
   mechOrder.forEach(id => mc.appendChild(makeCard(pairs[id].mech, "mech", id)));
-
   updateProgress();
 }
 
 function makeCard(text, type, id) {
   const el = document.createElement("div");
   el.className = "card";
-  el.dataset.id = id;
-  el.dataset.type = type;
+  el.dataset.id = id; el.dataset.type = type;
   el.textContent = text;
-  el.onclick = function() { onCardClick(type, id, el); };
+  el.onclick = function(){ onCardClick(type, id, el); };
   return el;
 }
 
@@ -501,54 +490,47 @@ function onCardClick(type, id, el) {
   if (type === "drug") {
     document.querySelectorAll(".card[data-type=drug]").forEach(c => c.classList.remove("selected"));
     if (selectedDrug === id) { selectedDrug = null; return; }
-    selectedDrug = id;
-    el.classList.add("selected");
+    selectedDrug = id; el.classList.add("selected");
   } else {
     document.querySelectorAll(".card[data-type=mech]").forEach(c => c.classList.remove("selected"));
     if (selectedMech === id) { selectedMech = null; return; }
-    selectedMech = id;
-    el.classList.add("selected");
+    selectedMech = id; el.classList.add("selected");
   }
   tryMatch();
 }
 
 function tryMatch() {
   if (selectedDrug === null || selectedMech === null) return;
-  const dEl = document.querySelector(`.card[data-type=drug][data-id="${selectedDrug}"]`);
-  const mEl = document.querySelector(`.card[data-type=mech][data-id="${selectedMech}"]`);
-
+  const dEl = document.querySelector('.card[data-type=drug][data-id="'+selectedDrug+'"]');
+  const mEl = document.querySelector('.card[data-type=mech][data-id="'+selectedMech+'"]');
   if (selectedDrug === selectedMech) {
-    matched.add(selectedDrug);
-    score++;
+    matched.add(selectedDrug); score++;
     document.getElementById("score").textContent = score;
     dEl.classList.remove("selected"); mEl.classList.remove("selected");
-    dEl.classList.add("correct", "locked"); mEl.classList.add("correct", "locked");
+    dEl.classList.add("correct","locked"); mEl.classList.add("correct","locked");
     dEl.onclick = null; mEl.onclick = null;
     selectedDrug = null; selectedMech = null;
     updateProgress();
     if (matched.size === pairs.length) setTimeout(showBanner, 350);
   } else {
     dEl.classList.add("wrong"); mEl.classList.add("wrong");
-    setTimeout(() => {
-      dEl.classList.remove("wrong", "selected");
-      mEl.classList.remove("wrong", "selected");
-    }, 600);
+    setTimeout(function(){ dEl.classList.remove("wrong","selected"); mEl.classList.remove("wrong","selected"); }, 600);
     selectedDrug = null; selectedMech = null;
   }
 }
 
 function updateProgress() {
   document.getElementById("progress-txt").textContent = currentCategory
-    ? `${currentCategory}【${currentMode}】：${matched.size} / ${pairs.length}`
+    ? currentCategory + "【" + currentMode + "】：" + matched.size + " / " + pairs.length
     : "選擇上方類別開始";
 }
 
 function revealAll() {
   if (!currentCategory) return;
-  pairs.forEach(p => {
+  pairs.forEach(function(p) {
     if (!matched.has(p.id)) {
-      const dEl = document.querySelector(`.card[data-type=drug][data-id="${p.id}"]`);
-      const mEl = document.querySelector(`.card[data-type=mech][data-id="${p.id}"]`);
+      const dEl = document.querySelector('.card[data-type=drug][data-id="'+p.id+'"]');
+      const mEl = document.querySelector('.card[data-type=mech][data-id="'+p.id+'"]');
       if (dEl) { dEl.classList.add("correct","locked"); dEl.classList.remove("selected"); dEl.onclick=null; }
       if (mEl) { mEl.classList.add("correct","locked"); mEl.classList.remove("selected"); mEl.onclick=null; }
       matched.add(p.id);
@@ -559,15 +541,14 @@ function revealAll() {
 
 function showBanner() {
   document.getElementById("banner").style.display = "block";
-  document.getElementById("banner-msg").textContent =
-    `答對 ${score} / ${pairs.length} 題。點「再練一次」可重新洗牌。`;
+  document.getElementById("banner-msg").textContent = "答對 " + score + " / " + pairs.length + " 題。點「再練一次」可重新洗牌。";
 }
 
 function shuffleArr(arr) {
-  const a = [...arr];
+  const a = arr.slice();
   for (let i = a.length-1; i > 0; i--) {
     const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
+    const t = a[i]; a[i] = a[j]; a[j] = t;
   }
   return a;
 }
