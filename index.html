@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考試3 藥物機轉配對題</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+  header {
+    background: #1e293b;
+    padding: 16px 24px;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 1.2rem; color: #f1f5f9; white-space: nowrap; }
+  #score-box {
+    margin-left: auto;
+    background: #0f172a;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    color: #94a3b8;
+  }
+  #score-box span { color: #38bdf8; font-weight: 700; }
+
+  /* Category tabs */
+  #cats {
+    display: flex;
+    gap: 8px;
+    padding: 14px 20px;
+    overflow-x: auto;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    scrollbar-width: thin;
+  }
+  .cat-btn {
+    background: #334155;
+    border: none;
+    color: #94a3b8;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    transition: all .15s;
+  }
+  .cat-btn:hover { background: #475569; color: #e2e8f0; }
+  .cat-btn.active { background: #0284c7; color: #fff; }
+
+  /* Controls */
+  #controls {
+    padding: 12px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  #progress-txt { color: #94a3b8; font-size: 0.85rem; }
+  .btn {
+    background: #334155;
+    border: none;
+    color: #e2e8f0;
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: background .15s;
+  }
+  .btn:hover { background: #475569; }
+  .btn-primary { background: #0284c7; }
+  .btn-primary:hover { background: #0369a1; }
+
+  /* Game area */
+  #game {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .col-header {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #64748b;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+  .card {
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    transition: all .15s;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    user-select: none;
+  }
+  .card:hover:not(.matched):not(.locked) {
+    border-color: #38bdf8;
+    background: #1a3554;
+  }
+  .card.selected {
+    border-color: #f59e0b;
+    background: #1c1a00;
+    box-shadow: 0 0 0 3px rgba(245,158,11,.25);
+  }
+  .card.correct {
+    border-color: #22c55e;
+    background: #052e16;
+    color: #86efac;
+    cursor: default;
+  }
+  .card.wrong {
+    border-color: #ef4444;
+    background: #2d0000;
+    animation: shake .35s;
+  }
+  .card.locked { cursor: default; opacity: .6; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* Finish banner */
+  #banner {
+    display: none;
+    text-align: center;
+    padding: 32px 20px;
+    animation: fadeIn .4s;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  #banner h2 { font-size: 2rem; color: #38bdf8; margin-bottom: 8px; }
+  #banner p { color: #94a3b8; margin-bottom: 20px; }
+
+  /* Hint tooltip */
+  .hint {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-style: italic;
+  }
+
+  @media (max-width: 640px) {
+    #game { grid-template-columns: 1fr; }
+    .col-mech { margin-top: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧬 藥物機轉配對題</h1>
+  <div id="score-box">得分 <span id="score">0</span> / <span id="total">0</span></div>
+</header>
+
+<div id="cats"></div>
+
+<div id="controls">
+  <span id="progress-txt">選擇上方類別開始</span>
+  <button class="btn btn-primary" id="btn-shuffle" onclick="shuffle()" style="display:none">🔀 重新洗牌</button>
+  <button class="btn" id="btn-reveal" onclick="revealAll()" style="display:none">👁 全部揭曉</button>
+</div>
+
+<div id="banner">
+  <h2>🎉 全部配對完成！</h2>
+  <p id="banner-msg"></p>
+  <button class="btn btn-primary" onclick="shuffle()">再練一次</button>
+</div>
+
+<div id="game">
+  <div id="col-drug">
+    <div class="col-header">藥物名稱</div>
+    <div id="drug-cards"></div>
+  </div>
+  <div id="col-mech">
+    <div class="col-header">作用機轉</div>
+    <div id="mech-cards"></div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  "糖尿病用藥": [
+    { drug: "Regular insulin (RI)", mech: "外源性胰島素補充，提供餐時降糖" },
+    { drug: "NPH（中效胰島素）", mech: "加 Zn + protamine 延長 hexamer→monomer 轉換，延緩吸收" },
+    { drug: "Lispro / Aspart / Glulisine", mech: "維持 monomer 狀態，避免 dimer/hexamer 聚集，加速吸收" },
+    { drug: "Glargine / Detemir", mech: "皮下沈澱緩釋（Glargine）或與 albumin 結合延長作用（Detemir）" },
+    { drug: "Acarbose", mech: "抑制小腸 α-glucosidase，延緩雙醣→單醣吸收" },
+    { drug: "Sulfonylureas（Gliquidone）", mech: "抑制 β-cell ATP-sensitive K⁺ channel → depolarization → Ca²⁺ influx → insulin 分泌" },
+    { drug: "Repaglinide / Nateglinide（-glinide）", mech: "非 SU 型，作用於 SU receptor 但親和力弱、解離快，短效促泌" },
+    { drug: "Metformin", mech: "活化 AMPK，降低肝糖新生與 glycogenolysis，增加周邊 insulin sensitivity" },
+    { drug: "Pioglitazone / Rosiglitazone（-glitazone）", mech: "PPARγ agonist，增加 GLUT 表現，改善 insulin resistance" },
+    { drug: "GLP-1 agonists（Exenatide / Liraglutide / Semaglutide）", mech: "增加 glucose-dependent insulin secretion、抑制 glucagon、延遲胃排空、抑制食慾" },
+    { drug: "DPP4 inhibitors（-gliptin）", mech: "抑制 DPP4，延長內生 GLP-1 作用時間" },
+    { drug: "SGLT2 inhibitors（-gliflozin）", mech: "抑制近曲小管 SGLT2，降低葡萄糖再吸收，使尿糖上升" },
+    { drug: "Pramlintide", mech: "模仿 amylin，減少 glucagon、延遲胃排空、降低食慾" },
+  ],
+  "降血脂藥物": [
+    { drug: "β-Sitosterol（植物固醇）", mech: "與膽固醇競爭腸道吸收" },
+    { drug: "Ezetimibe", mech: "抑制腸上皮 NPC1L1，阻斷膽固醇吸收" },
+    { drug: "Cholestyramine / Colestipol（膽酸結合樹脂）", mech: "與膽酸結合，降低膽酸再吸收，間接減少膽固醇來源" },
+    { drug: "Niacin（Nicotinic acid）", mech: "抑制脂肪組織 FFA 釋放、肝臟 TG 合成；提升 LPL 活性；增加 HDL" },
+    { drug: "Fibrate（Gemfibrozil / Fenofibrate）", mech: "PPARα agonist，提升 LPL，增加 β-oxidation，降低 VLDL/TG" },
+    { drug: "Statins（-statin）", mech: "抑制 HMG-CoA reductase，減少內生性膽固醇合成，增加肝細胞 LDLR" },
+    { drug: "Bempedoic acid", mech: "抑制 ATP-citrate lyase（ACL），位於 statin 更上游" },
+    { drug: "PCSK9 抗體（Alirocumab / Evolocumab）", mech: "中和 PCSK9，保留 LDLR，增加肝臟回收 LDL" },
+    { drug: "Inclisiran", mech: "雙股 siRNA 直接降解 PCSK9 mRNA，長效降 LDL" },
+  ],
+  "甲狀腺用藥": [
+    { drug: "Levothyroxine（T4）/ Liothyronine（T3）", mech: "外源性補充甲狀腺素" },
+    { drug: "PTU / Methimazole / Carbimazole（Thioamides）", mech: "抑制 TPO，阻斷 iodide oxidation、organification 及 MIT/DIT coupling" },
+    { drug: "PTU（特有）", mech: "額外抑制周邊 T4→T3 轉換（Methimazole 無此作用）" },
+    { drug: "Thiocyanate / Perchlorate（Ionic inhibitors）", mech: "與 iodide 競爭 NIS，抑制 I⁻ 進入濾泡細胞" },
+    { drug: "Lugol's solution / SSKI（iodide salts）", mech: "Wolff-Chaikoff effect：急性抑制 TH 合成與釋放（只能短期）" },
+    { drug: "¹³¹I（Radioiodine）", mech: "β 射線破壞甲狀腺細胞，治療 hyperthyroidism（可致永久 hypothyroidism）" },
+    { drug: "Propranolol（thyroid storm 輔助）", mech: "β-blocker 降交感症狀；同時抑制 peripheral T4→T3 轉換" },
+    { drug: "Amiodarone", mech: "含碘且抑制 T4→T3，可致甲狀腺功能低下或甲狀腺毒症" },
+  ],
+  "抗骨質疏鬆藥": [
+    { drug: "Bisphosphonates（含氮：Alendronate / Zoledronate）", mech: "抑制 FPPS（mevalonate pathway），阻斷蛋白質 prenylation → osteoclast 失能" },
+    { drug: "Bisphosphonates（不含氮：Etidronate / Clodronate）", mech: "干擾 ATP 代謝 → osteoclast 凋亡" },
+    { drug: "Teriparatide / Abaloparatide（PTH 類似物）", mech: "間歇性活化 PTH1R，促進 osteoblast，增加 bone formation" },
+    { drug: "Calcitonin salmon", mech: "抑制 osteoclast，增加骨密度，並增加腎排鈣" },
+    { drug: "Cinacalcet", mech: "活化 CaSR（calcium-sensing receptor），抑制 PTH 分泌" },
+    { drug: "Denosumab", mech: "與 RANKL 結合，阻斷 RANKL-RANK interaction，抑制 osteoclast 成熟" },
+    { drug: "Romosozumab", mech: "中和 sclerostin，活化 Wnt/β-catenin，促進 bone formation" },
+    { drug: "Raloxifene / Bazedoxifene（SERMs）", mech: "骨頭表現 estrogen-like effect 抑制 bone resorption；乳房/子宮內膜偏 antagonist" },
+    { drug: "Burosumab（Anti-FGF23）", mech: "中和 FGF23，減少腎排磷，增加 1,25(OH)₂D 形成" },
+  ],
+  "腦下垂體與產科": [
+    { drug: "Leuprolide / Goserelin（GnRH agonists）", mech: "連續給藥造成 pituitary desensitization，功能上表現為 antagonist" },
+    { drug: "Ganirelix / Degarelix（-relix，GnRH antagonists）", mech: "直接阻斷 GnRH receptor，快速抑制 FSH/LH" },
+    { drug: "hCG / Gonadotropins", mech: "直接提供 FSH/LH/hCG 活性，促進濾泡成熟與排卵" },
+    { drug: "Pegvisomant", mech: "GH receptor competitive antagonist，阻斷 JAK2-STAT5 訊號" },
+    { drug: "Octreotide / Lanreotide（-reotide）", mech: "somatostatin 類似物，抑制 GH、TSH、glucagon、insulin 等多種激素分泌" },
+    { drug: "Bromocriptine / Cabergoline", mech: "D2 receptor agonist，抑制 prolactin 分泌" },
+    { drug: "Oxytocin", mech: "促進子宮收縮與射乳" },
+    { drug: "Atosiban", mech: "阻斷 oxytocin receptor，tocolytic（安胎）" },
+    { drug: "Ritodrine / Terbutaline（β2 tocolytics）", mech: "β2 agonist → cAMP ↑ → MLCK 抑制 → 子宮平滑肌鬆弛" },
+    { drug: "Desmopressin（DDAVP）", mech: "偏向 V2 receptor，增加 AQP2 與水再吸收；促 factor VIII/vWF 釋放" },
+    { drug: "Tolvaptan / Conivaptan（-vaptan）", mech: "阻斷 vasopressin receptor，減少腎臟水再吸收（aquaretic）" },
+  ],
+  "減肥藥": [
+    { drug: "Orlistat", mech: "共價結合腸脂肪酶 serine residue（不可逆），減少脂肪吸收約 30%" },
+    { drug: "Semaglutide（Wegovy）/ Liraglutide（Saxenda）", mech: "激活 GLP-1R → ↑insulin、↓glucagon、↓食慾、延遲胃排空" },
+    { drug: "Tirzepatide（Zepbound）", mech: "同時激活 GLP-1R + GIPR（dual incretin），減重效果優於單純 GLP-1 agonist" },
+    { drug: "Setmelanotide（Imcivree）", mech: "選擇性激活 MC4R（親和力為 MC1/3R 的 20 倍），下視丘抑制食慾；僅用於特定基因缺陷" },
+    { drug: "Phentermine + Topiramate（Qsymia）", mech: "Phentermine = sympathomimetic amine（↑NE）；Topiramate = anticonvulsant（GABA↑、Na⁺↓）" },
+    { drug: "Bupropion + Naltrexone（Contrave）", mech: "DA/NE reuptake inhibitor + μ-opioid antagonist → 持續活化 POMC，同時抑制 mesolimbic reward" },
+    { drug: "Fenfluramine / Dexfenfluramine（已下架）", mech: "促進 5-HT 大量釋放並抑制再吸收 → 5-HT2c → ↓食慾（下架原因：cardiac valvulopathy）" },
+    { drug: "Rimonabant（已下架）", mech: "CB1 inverse agonist，↓mesolimbic reward（下架：憂鬱/自殺傾向）" },
+  ],
+  "PGx 與標靶藥": [
+    { drug: "Warfarin", mech: "抑制 VKORC1，降低凝血因子活化（PK→CYP2C9，PD→VKORC1）" },
+    { drug: "Thiopurines（Azathioprine / 6-MP）", mech: "需 TPMT 代謝失活；TPMT PM 易蓄積造成毒性" },
+    { drug: "Gefitinib / Erlotinib（EGFR-TKIs）", mech: "抑制 EGFR tyrosine kinase signaling（需先驗 EGFR mutation）" },
+    { drug: "Cetuximab / Panitumumab（Anti-EGFR mAb）", mech: "中和 EGFR，阻斷 MAPK/PI3K 訊號（僅適用 wild-type KRAS）" },
+    { drug: "Trastuzumab（Herceptin）", mech: "中和 HER2（需 HER2 過度表現）" },
+    { drug: "Abacavir（NRTI）", mech: "HLA-B*5701 陽性者有致死性過敏反應風險" },
+    { drug: "Carbamazepine", mech: "Na⁺ channel blocker；亞洲人須先驗 HLA-B*1502（避免 SJS/TEN）" },
+    { drug: "Digoxin", mech: "抑制 Na⁺/K⁺-ATPase；受 MDR1/P-gp 影響；老人 Vd 縮小易中毒" },
+    { drug: "Acetaminophen", mech: "過量時 CYP2E1/CYP3A4 產生 NAPQI → 肝毒性（解毒劑：N-Acetylcysteine）" },
+    { drug: "Botulinum toxin", mech: "切割 SNARE 蛋白，抑制 ACh vesicle docking/release → flaccid paralysis" },
+    { drug: "Thalidomide", mech: "免疫調節與抗血管新生（抑制 VEGF/bFGF）；有致畸性" },
+  ],
+};
+
+// ---- State ----
+let currentCategory = null;
+let pairs = [];          // [{drug, mech, id}]
+let drugOrder = [];      // indices into pairs (left column)
+let mechOrder = [];      // indices into pairs (right column, shuffled)
+let matched = new Set(); // matched pair ids
+let selectedDrug = null; // id of selected drug card
+let selectedMech = null; // id of selected mech card
+let score = 0;
+let total = 0;
+
+// ---- Init ----
+const catsDiv = document.getElementById("cats");
+Object.keys(DATA).forEach(cat => {
+  const btn = document.createElement("button");
+  btn.className = "cat-btn";
+  btn.textContent = cat;
+  btn.onclick = () => loadCategory(cat, btn);
+  catsDiv.appendChild(btn);
+});
+
+function loadCategory(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  pairs = DATA[cat].map((p, i) => ({...p, id: i}));
+  matched.clear();
+  selectedDrug = null;
+  selectedMech = null;
+  score = 0;
+  total = pairs.length;
+  document.getElementById("score").textContent = score;
+  document.getElementById("total").textContent = total;
+  document.getElementById("banner").style.display = "none";
+  document.getElementById("btn-shuffle").style.display = "";
+  document.getElementById("btn-reveal").style.display = "";
+  renderGame();
+}
+
+function shuffle() {
+  if (!currentCategory) return;
+  matched.clear();
+  selectedDrug = null;
+  selectedMech = null;
+  score = 0;
+  document.getElementById("score").textContent = score;
+  document.getElementById("banner").style.display = "none";
+  renderGame();
+}
+
+function renderGame() {
+  drugOrder = pairs.map(p => p.id);
+  mechOrder = shuffleArr(pairs.map(p => p.id));
+
+  const dc = document.getElementById("drug-cards");
+  const mc = document.getElementById("mech-cards");
+  dc.innerHTML = "";
+  mc.innerHTML = "";
+
+  drugOrder.forEach(id => {
+    const p = pairs[id];
+    const el = makeCard(p.drug, "drug", id);
+    dc.appendChild(el);
+  });
+  mechOrder.forEach(id => {
+    const p = pairs[id];
+    const el = makeCard(p.mech, "mech", id);
+    mc.appendChild(el);
+  });
+
+  updateProgress();
+}
+
+function makeCard(text, type, id) {
+  const el = document.createElement("div");
+  el.className = "card";
+  el.dataset.id = id;
+  el.dataset.type = type;
+  el.textContent = text;
+  el.onclick = () => onCardClick(type, id, el);
+  return el;
+}
+
+function onCardClick(type, id, el) {
+  if (matched.has(id)) return;
+
+  if (type === "drug") {
+    // Deselect previous drug
+    document.querySelectorAll(".card[data-type=drug]").forEach(c => c.classList.remove("selected"));
+    if (selectedDrug === id) { selectedDrug = null; return; }
+    selectedDrug = id;
+    el.classList.add("selected");
+    tryMatch();
+  } else {
+    // Deselect previous mech
+    document.querySelectorAll(".card[data-type=mech]").forEach(c => c.classList.remove("selected"));
+    if (selectedMech === id) { selectedMech = null; return; }
+    selectedMech = id;
+    el.classList.add("selected");
+    tryMatch();
+  }
+}
+
+function tryMatch() {
+  if (selectedDrug === null || selectedMech === null) return;
+
+  const dEl = document.querySelector(`.card[data-type=drug][data-id="${selectedDrug}"]`);
+  const mEl = document.querySelector(`.card[data-type=mech][data-id="${selectedMech}"]`);
+
+  if (selectedDrug === selectedMech) {
+    // Correct!
+    matched.add(selectedDrug);
+    score++;
+    document.getElementById("score").textContent = score;
+
+    dEl.classList.remove("selected");
+    mEl.classList.remove("selected");
+    dEl.classList.add("correct", "locked");
+    mEl.classList.add("correct", "locked");
+    dEl.onclick = null;
+    mEl.onclick = null;
+
+    selectedDrug = null;
+    selectedMech = null;
+    updateProgress();
+
+    if (matched.size === pairs.length) setTimeout(showBanner, 300);
+  } else {
+    // Wrong
+    dEl.classList.add("wrong");
+    mEl.classList.add("wrong");
+    setTimeout(() => {
+      dEl.classList.remove("wrong", "selected");
+      mEl.classList.remove("wrong", "selected");
+    }, 600);
+    selectedDrug = null;
+    selectedMech = null;
+  }
+}
+
+function updateProgress() {
+  const done = matched.size;
+  const tot = pairs.length;
+  document.getElementById("progress-txt").textContent =
+    currentCategory ? `${currentCategory}：已配對 ${done} / ${tot}` : "選擇上方類別開始";
+}
+
+function revealAll() {
+  if (!currentCategory) return;
+  pairs.forEach(p => {
+    if (!matched.has(p.id)) {
+      const dEl = document.querySelector(`.card[data-type=drug][data-id="${p.id}"]`);
+      const mEl = document.querySelector(`.card[data-type=mech][data-id="${p.id}"]`);
+      if (dEl) { dEl.classList.add("correct", "locked"); dEl.onclick = null; dEl.classList.remove("selected"); }
+      if (mEl) { mEl.classList.add("correct", "locked"); mEl.onclick = null; mEl.classList.remove("selected"); }
+      matched.add(p.id);
+    }
+  });
+  document.getElementById("score").textContent = score;
+  updateProgress();
+}
+
+function showBanner() {
+  document.getElementById("banner").style.display = "block";
+  document.getElementById("banner-msg").textContent =
+    `答對 ${score} / ${pairs.length} 題。點「再練一次」可重新洗牌。`;
+}
+
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Load first category by default
+const firstCat = Object.keys(DATA)[0];
+const firstBtn = document.querySelector(".cat-btn");
+loadCategory(firstCat, firstBtn);
+</script>
+</body>
+</html>
